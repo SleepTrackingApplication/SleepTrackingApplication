@@ -36,12 +36,12 @@ func (h *Handler) SetupRoutes(r *mux.Router) {
 	protected := r.PathPrefix("/sleep").Subrouter()
 	protected.Use(h.authMiddleware)
 	protected.HandleFunc("/period", h.createSleepPeriodHandler).Methods("POST")
-	protected.HandleFunc("/periods", h.getSleepPeriodsHandler).Methods("GET")
-	protected.HandleFunc("/periods/{user_id}", h.getSleepPeriodsByUserIDHandler).Methods("GET")
+	protected.HandleFunc("/periods", h.getSleepPeriodsHandler).Methods("GET")                   //Извлекаем id из токена и возвращаем
+	protected.HandleFunc("/periods/{user_id}", h.getSleepPeriodsByUserIDHandler).Methods("GET") // Получаем id в запросе, но все равно проверяем, равен ли он id из токена
 }
 
 func (h *Handler) homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, Sleep Tracker Backend! Database connected.")
+	fmt.Fprintf(w, "Server started and Database connected.")
 }
 
 func (h *Handler) registerHandler(w http.ResponseWriter, r *http.Request) {
@@ -102,15 +102,21 @@ func (h *Handler) createSleepPeriodHandler(w http.ResponseWriter, r *http.Reques
 	var input struct {
 		StartPeriod time.Time `json:"start_period"`
 		EndPeriod   time.Time `json:"end_period"`
+		Duration    int64     `json:"duration"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if input.Duration < 0 {
+		http.Error(w, "Duration cannot be negative", http.StatusBadRequest)
 		return
 	}
 	sleepPeriod := &models.SleepPeriod{
 		UserID:      userID,
 		StartPeriod: input.StartPeriod,
 		EndPeriod:   input.EndPeriod,
+		Duration:    input.Duration,
 	}
 	if err := h.sleepPeriodRepo.Create(sleepPeriod); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

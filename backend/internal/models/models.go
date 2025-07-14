@@ -18,4 +18,5 @@ type SleepPeriod struct {
 	StartPeriod time.Time `gorm:"not null;column:start_period"`
 	EndPeriod   time.Time `gorm:"column:end_period"`
 	CreatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP"`
+	Duration    int64     `gorm:"default:0"`
 }
