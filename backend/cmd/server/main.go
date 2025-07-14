@@ -10,33 +10,47 @@ import (
 	"backend/internal/repository"
 	"backend/internal/services/auth"
 
+	_ "backend/docs"
+
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
+
 func main() {
-	// Настройка базы данных
-	dsn := "host=db user=postgres password=" + os.Getenv("POSTGRES_PASSWORD") + " dbname=sleep_tracker port=5432 sslmode=disable"
+
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		dbHost = "localhost" 
+	}
+
+	password := os.Getenv("POSTGRES_PASSWORD")
+	if password == "" {
+		password = "postgres"
+	}
+	
+	dsn := "host=" + dbHost + " user=postgres password=" + password + " dbname=sleep_tracker port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Автомиграция моделей
+
 	db.AutoMigrate(&models.User{}, &models.SleepPeriod{})
 
-	// Инициализация репозиториев и сервисов
+
 	userRepo := repository.NewUserRepository(db)
 	sleepPeriodRepo := repository.NewSleepPeriodRepository(db)
 	authService := auth.NewAuthService(userRepo)
 
-	// Инициализация хендлера и настройка роутов
 	handler := handlers.NewHandler(authService, sleepPeriodRepo)
 	r := mux.NewRouter()
 	handler.SetupRoutes(r)
 
-	// Запуск сервера
+	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+
 	log.Println("Starting server on :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)

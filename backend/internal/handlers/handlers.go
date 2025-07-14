@@ -40,10 +40,29 @@ func (h *Handler) SetupRoutes(r *mux.Router) {
 	protected.HandleFunc("/periods/{user_id}", h.getSleepPeriodsByUserIDHandler).Methods("GET") // Получаем id в запросе, но все равно проверяем, равен ли он id из токена
 }
 
+// HomeHandler godoc
+// @Summary Health check
+// @Description Check if server is running and database is connected
+// @Tags health
+// @Produce plain
+// @Success 200 {string} string "Server started and Database connected."
+// @Router / [get]
 func (h *Handler) homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Server started and Database connected.")
 }
 
+// RegisterHandler godoc
+// @Summary Register a new user
+// @Description Create a new user account
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param user body RegisterRequest true "User registration data"
+// @Success 201 {object} UserResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 409 {string} string "Username already exists"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /auth/register [post]
 func (h *Handler) registerHandler(w http.ResponseWriter, r *http.Request) {
 	if h.authService == nil {
 		http.Error(w, "Internal server error: auth service not initialized", http.StatusInternalServerError)
@@ -73,6 +92,17 @@ func (h *Handler) registerHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"id": user.ID, "username": user.Username})
 }
 
+// LoginHandler godoc
+// @Summary User login
+// @Description Authenticate user and return JWT token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param credentials body LoginRequest true "User credentials"
+// @Success 200 {object} TokenResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Router /auth/login [post]
 func (h *Handler) loginHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Username string `json:"username"`
@@ -93,6 +123,19 @@ func (h *Handler) loginHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
 
+// CreateSleepPeriodHandler godoc
+// @Summary Create a new sleep period
+// @Description Add a new sleep period for the authenticated user
+// @Tags sleep
+// @Accept json
+// @Produce json
+// @Param sleep body CreateSleepPeriodRequest true "Sleep period data"
+// @Success 201 {object} models.SleepPeriod
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Security BearerAuth
+// @Router /sleep/period [post]
 func (h *Handler) createSleepPeriodHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserIDFromToken(r)
 	if err != nil {
@@ -126,6 +169,16 @@ func (h *Handler) createSleepPeriodHandler(w http.ResponseWriter, r *http.Reques
 	json.NewEncoder(w).Encode(sleepPeriod)
 }
 
+// GetSleepPeriodsHandler godoc
+// @Summary Get user's sleep periods
+// @Description Retrieve all sleep periods for the authenticated user
+// @Tags sleep
+// @Produce json
+// @Success 200 {array} models.SleepPeriod
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Security BearerAuth
+// @Router /sleep/periods [get]
 func (h *Handler) getSleepPeriodsHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserIDFromToken(r)
 	if err != nil {
@@ -141,6 +194,19 @@ func (h *Handler) getSleepPeriodsHandler(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(periods)
 }
 
+// GetSleepPeriodsByUserIDHandler godoc
+// @Summary Get sleep periods by user ID
+// @Description Retrieve sleep periods for a specific user (must be the authenticated user)
+// @Tags sleep
+// @Produce json
+// @Param user_id path int true "User ID"
+// @Success 200 {array} models.SleepPeriod
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 403 {string} string "Forbidden"
+// @Failure 500 {string} string "Internal Server Error"
+// @Security BearerAuth
+// @Router /sleep/periods/{user_id} [get]
 func (h *Handler) getSleepPeriodsByUserIDHandler(w http.ResponseWriter, r *http.Request) {
 	// Извлекаем user_id из URL
 	vars := mux.Vars(r)
@@ -219,4 +285,30 @@ func (h *Handler) authMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+// Request/Response models for Swagger documentation
+type RegisterRequest struct {
+	Username string `json:"username" example:"john_doe"`
+	Password string `json:"password" example:"password123"`
+}
+
+type LoginRequest struct {
+	Username string `json:"username" example:"john_doe"`
+	Password string `json:"password" example:"password123"`
+}
+
+type UserResponse struct {
+	ID       uint64 `json:"id" example:"1"`
+	Username string `json:"username" example:"john_doe"`
+}
+
+type TokenResponse struct {
+	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+}
+
+type CreateSleepPeriodRequest struct {
+	StartPeriod string `json:"start_period" example:"2023-12-01T22:00:00Z"`
+	EndPeriod   string `json:"end_period" example:"2023-12-02T06:00:00Z"`
+	Duration    int64  `json:"duration" example:"28800"`
 }
