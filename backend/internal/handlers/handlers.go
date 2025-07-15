@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -19,25 +20,34 @@ import (
 type Handler struct {
 	authService     auth.AuthService
 	sleepPeriodRepo repository.SleepPeriodRepository
+	userRepo        repository.UserRepository
 }
 
-func NewHandler(authService auth.AuthService, sleepPeriodRepo repository.SleepPeriodRepository) *Handler {
+func NewHandler(authService auth.AuthService, sleepPeriodRepo repository.SleepPeriodRepository, userRepo repository.UserRepository) *Handler {
 	return &Handler{
 		authService:     authService,
 		sleepPeriodRepo: sleepPeriodRepo,
+		userRepo:        userRepo,
 	}
 }
 
 func (h *Handler) SetupRoutes(r *mux.Router) {
 	r.HandleFunc("/", h.homeHandler)
-	r.HandleFunc("/auth/register", h.registerHandler).Methods("POST")
-	r.HandleFunc("/auth/login", h.loginHandler).Methods("POST")
+	//Все запросы на бек через /api
+	r.HandleFunc("/api/auth/register", h.registerHandler).Methods("POST") //р
+	r.HandleFunc("/api/auth/login", h.loginHandler).Methods("POST")
+	r.HandleFunc("/api/auth/logout", h.logoutHandler).Methods("POST")
 
-	protected := r.PathPrefix("/sleep").Subrouter()
+	protected := r.PathPrefix("/api").Subrouter()
+	//Middleware для проверки токена JWT
 	protected.Use(h.authMiddleware)
-	protected.HandleFunc("/period", h.createSleepPeriodHandler).Methods("POST")
-	protected.HandleFunc("/periods", h.getSleepPeriodsHandler).Methods("GET")                   //Извлекаем id из токена и возвращаем
-	protected.HandleFunc("/periods/{user_id}", h.getSleepPeriodsByUserIDHandler).Methods("GET") // Получаем id в запросе, но все равно проверяем, равен ли он id из токена
+	protected.HandleFunc("/auth/me", h.getMeHandler).Methods("GET")                                   // Информация о текущем пользователе
+	protected.HandleFunc("/sleep/period", h.createSleepPeriodHandler).Methods("POST")                 // Создание нового перида сна для текущего пользователя
+	protected.HandleFunc("/sleep/periods", h.getSleepPeriodsHandler).Methods("GET")                   //Извлекаем id из токена и возвращаем
+	protected.HandleFunc("/sleep/periods/{user_id}", h.getSleepPeriodsByUserIDHandler).Methods("GET") // Получаем id в запросе, но все равно проверяем, равен ли он id из токена
+	protected.HandleFunc("/leaderboard", h.getLeaderboardHandler).Methods("GET")                      //Топ
+	protected.HandleFunc("/myposition", h.getMyPositionHandler).Methods("GET")                        //Позиция текущего пользователя в топе
+	protected.HandleFunc("/balance/decrease", h.decreaseBalanceHandler).Methods("POST")               //Уменьшение баланса
 }
 
 // HomeHandler godoc
@@ -49,6 +59,113 @@ func (h *Handler) SetupRoutes(r *mux.Router) {
 // @Router / [get]
 func (h *Handler) homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Server started and Database connected.")
+}
+
+func (h *Handler) decreaseBalanceHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := getUserIDFromToken(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	var input struct {
+		Amount int64 `json:"amount"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if input.Amount <= 0 {
+		http.Error(w, "Amount must be positive", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.userRepo.FindByID(userID)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusInternalServerError)
+		return
+	}
+
+	if user.Balance < input.Amount {
+		http.Error(w, "Insufficient balance", http.StatusBadRequest)
+		return
+	}
+
+	user.Balance -= input.Amount
+	user.UpdatedAt = time.Now()
+
+	if err := h.userRepo.UpdateUser(user); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Balance int64 `json:"balance"`
+	}{
+		Balance: user.Balance,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+func (h *Handler) getMyPositionHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := getUserIDFromToken(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	user, err := h.userRepo.FindByID(userID)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusInternalServerError)
+		return
+	}
+
+	position, err := h.userRepo.GetPositionInLeaderboard(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Position int64 `json:"position"`
+	}{
+		Position: position,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+func (h *Handler) getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
+	limitStr := r.URL.Query().Get("limit")
+	var limit int
+	var err error
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
+			return
+		}
+		if limit <= 0 || limit > 100 {
+			http.Error(w, "Limit must be between 1 and 100", http.StatusBadRequest)
+			return
+		}
+	} else {
+		limit = 10
+	}
+
+	leaderboard, err := h.userRepo.GetLeaderboard(limit)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(leaderboard)
 }
 
 // RegisterHandler godoc
@@ -123,9 +240,47 @@ func (h *Handler) loginHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
 
+// LogoutHandler godoc
+// @Summary Logout user
+// @Description Remove the JWT token from the client side
+// @Tags auth
+// @Success 200 {string} string "Logged out successfully"
+// @Router /auth/logout [post]
+func (h *Handler) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Logged out successfully")
+}
+
+// GetMeHandler godoc
+// @Summary Get current user data
+// @Description Retrieve data of the authenticated user
+// @Tags auth
+// @Produce json
+// @Success 200 {object} models.User
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Security BearerAuth
+// @Router /auth/me [get]
+func (h *Handler) getMeHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := getUserIDFromToken(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	user, err := h.userRepo.FindByID(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(user)
+}
+
 // CreateSleepPeriodHandler godoc
 // @Summary Create a new sleep period
-// @Description Add a new sleep period for the authenticated user
+// @Description Add a new sleep period for the authenticated user and increse user's balance and rating
 // @Tags sleep
 // @Accept json
 // @Produce json
@@ -161,7 +316,22 @@ func (h *Handler) createSleepPeriodHandler(w http.ResponseWriter, r *http.Reques
 		EndPeriod:   input.EndPeriod,
 		Duration:    input.Duration,
 	}
+
 	if err := h.sleepPeriodRepo.Create(sleepPeriod); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	//Increase user's balance and rating
+	user, err := h.userRepo.FindByID(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	hours := math.Round(float64(input.Duration) / 60.0)
+	user.Balance += int64(hours)
+	user.Rating += int64(hours)
+	user.UpdatedAt = time.Now()
+	if err := h.userRepo.UpdateUser(user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

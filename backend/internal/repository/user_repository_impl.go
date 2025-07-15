@@ -35,3 +35,27 @@ func (r *userRepository) FindByID(id uint64) (*models.User, error) {
 	}
 	return &user, nil
 }
+func (r *userRepository) UpdateUser(user *models.User) error {
+	return r.db.Model(user).Updates(map[string]interface{}{
+		"rating":     user.Rating,
+		"balance":    user.Balance,
+		"updated_at": user.UpdatedAt,
+	}).Error
+}
+
+func (r *userRepository) GetLeaderboard(limit int) ([]*models.User, error) {
+	var users []*models.User
+	err := r.db.Select("username, rating").Order("rating DESC").Limit(limit).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+func (r *userRepository) GetPositionInLeaderboard(user *models.User) (int64, error) {
+	var count int64
+	err := r.db.Model(&models.User{}).Where("rating > ?", user.Rating).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count + 1, nil
+}
