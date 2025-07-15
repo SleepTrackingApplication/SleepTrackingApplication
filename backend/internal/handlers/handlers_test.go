@@ -9,15 +9,13 @@ import (
 	"testing"
 )
 
-
-
 func TestHomeHandler_Integration(t *testing.T) {
 	// Create mock services
 	authService := &mockAuthService{}
 	sleepRepo := &mockSleepRepo{}
-	
+
 	handler := NewHandler(authService, sleepRepo)
-	
+
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
@@ -33,9 +31,9 @@ func TestRegisterHandler_Integration(t *testing.T) {
 	// Create mock services
 	authService := &mockAuthService{}
 	sleepRepo := &mockSleepRepo{}
-	
+
 	handler := NewHandler(authService, sleepRepo)
-	
+
 	// Create JSON payload
 	payload := `{"username":"testuser","password":"testpass"}`
 	req := httptest.NewRequest(http.MethodPost, "/auth/register", strings.NewReader(payload))
@@ -77,4 +75,4 @@ func (m *mockSleepRepo) Update(period *models.SleepPeriod) error {
 
 func (m *mockSleepRepo) Delete(id uint64) error {
 	return nil
-} 
+}
