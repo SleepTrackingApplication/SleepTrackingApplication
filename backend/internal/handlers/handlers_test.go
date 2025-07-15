@@ -81,6 +81,18 @@ func (m *mockSleepRepo) Delete(id uint64) error {
 
 type mockUserRepo struct{}
 
+func (m *mockUserRepo) GetLeaderboard(limit int) ([]*models.User, error) {
+	return []*models.User{}, nil
+}
+
+func (m *mockUserRepo) GetPositionInLeaderboard(*models.User) (int64, error) {
+	return 1, nil
+}
+
+func (m *mockUserRepo) UpdateUser(user *models.User) error {
+	return nil
+}
+
 func (m *mockUserRepo) FindByID(id uint64) (*models.User, error) {
 	return &models.User{ID: id}, nil
 }
