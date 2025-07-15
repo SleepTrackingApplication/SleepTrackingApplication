@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'tracker_screen.dart'; 
 
 // Class LoginScreen represents authorization screen
 class LoginScreen extends StatelessWidget {
