@@ -1,0 +1,267 @@
+basePath: /
+definitions:
+  handlers.CreateSleepPeriodRequest:
+    properties:
+      duration:
+        example: 28800
+        type: integer
+      end_period:
+        example: "2023-12-02T06:00:00Z"
+        type: string
+      start_period:
+        example: "2023-12-01T22:00:00Z"
+        type: string
+    type: object
+  handlers.LoginRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  handlers.RegisterRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  handlers.TokenResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  handlers.UserResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+      username:
+        example: john_doe
+        type: string
+    type: object
+  models.SleepPeriod:
+    description: Sleep period tracking information
+    properties:
+      created_at:
+        type: string
+      duration:
+        example: 28800
+        type: integer
+      end_period:
+        example: "2023-12-02T06:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      start_period:
+        example: "2023-12-01T22:00:00Z"
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: A sleep tracking application API
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Sleep Tracking API
+  version: "1.0"
+paths:
+  /:
+    get:
+      description: Check if server is running and database is connected
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Server started and Database connected.
+          schema:
+            type: string
+      summary: Health check
+      tags:
+      - health
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: User credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: User login
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "409":
+          description: Username already exists
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register a new user
+      tags:
+      - auth
+  /sleep/period:
+    post:
+      consumes:
+      - application/json
+      description: Add a new sleep period for the authenticated user
+      parameters:
+      - description: Sleep period data
+        in: body
+        name: sleep
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateSleepPeriodRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.SleepPeriod'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new sleep period
+      tags:
+      - sleep
+  /sleep/periods:
+    get:
+      description: Retrieve all sleep periods for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SleepPeriod'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get user's sleep periods
+      tags:
+      - sleep
+  /sleep/periods/{user_id}:
+    get:
+      description: Retrieve sleep periods for a specific user (must be the authenticated
+        user)
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SleepPeriod'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get sleep periods by user ID
+      tags:
+      - sleep
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
