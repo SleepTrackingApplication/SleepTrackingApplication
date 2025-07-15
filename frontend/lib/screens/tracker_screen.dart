@@ -12,6 +12,7 @@ class _TrackerScreenState extends State<TrackerScreen> {
   TimeOfDay _bedtime = const TimeOfDay(hour: 22, minute: 0);
   TimeOfDay _wakeup = const TimeOfDay(hour: 7, minute: 0);
   String _sleepDuration = '9h 0m';
+  int _totalMinutes = 540;
 
   // Function to select bedtime or wake up time
   Future<void> _selectTime(BuildContext context, bool isBedtime) async {
@@ -47,6 +48,7 @@ class _TrackerScreenState extends State<TrackerScreen> {
     final minutes = (totalMinutes % 60).round();
     
     setState(() {
+      _totalMinutes = totalMinutes;
       _sleepDuration = '${hours}h ${minutes}m';
     });
   }
@@ -226,7 +228,11 @@ class _TrackerScreenState extends State<TrackerScreen> {
                     height: 55,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/session');
+                        Navigator.pushNamed(context, '/session',
+                          arguments: {
+                            'duration' : _totalMinutes,
+                            'startTime' : DateTime.now(),
+                          });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white.withOpacity(0.8),
