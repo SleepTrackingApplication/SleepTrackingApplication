@@ -258,18 +258,6 @@ class _TrackerScreenState extends State<TrackerScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        height: 60,
-        color: Colors.black.withOpacity(0.3),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Icon(Icons.nights_stay, color: Colors.white),
-            Icon(Icons.assessment, color: Colors.white70),
-            Icon(Icons.person, color: Colors.white70),
-          ],
-        ),
-      ),
     );
   }
 }
