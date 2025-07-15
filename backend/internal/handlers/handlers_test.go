@@ -13,8 +13,9 @@ func TestHomeHandler_Integration(t *testing.T) {
 	// Create mock services
 	authService := &mockAuthService{}
 	sleepRepo := &mockSleepRepo{}
+	userRepo := &mockUserRepo{}
 
-	handler := NewHandler(authService, sleepRepo)
+	handler := NewHandler(authService, sleepRepo, userRepo)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
@@ -31,8 +32,9 @@ func TestRegisterHandler_Integration(t *testing.T) {
 	// Create mock services
 	authService := &mockAuthService{}
 	sleepRepo := &mockSleepRepo{}
+	userRepo := &mockUserRepo{}
 
-	handler := NewHandler(authService, sleepRepo)
+	handler := NewHandler(authService, sleepRepo, userRepo)
 
 	// Create JSON payload
 	payload := `{"username":"testuser","password":"testpass"}`
@@ -75,4 +77,18 @@ func (m *mockSleepRepo) Update(period *models.SleepPeriod) error {
 
 func (m *mockSleepRepo) Delete(id uint64) error {
 	return nil
+}
+
+type mockUserRepo struct{}
+
+func (m *mockUserRepo) FindByID(id uint64) (*models.User, error) {
+	return &models.User{ID: id}, nil
+}
+
+func (m *mockUserRepo) Create(user *models.User) error {
+	return nil
+}
+
+func (m *mockUserRepo) FindByUsername(username string) (*models.User, error) {
+	return &models.User{Username: username}, nil
 }
