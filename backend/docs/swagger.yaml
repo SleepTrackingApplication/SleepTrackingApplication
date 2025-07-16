@@ -1,4 +1,3 @@
-basePath: /
 definitions:
   handlers.CreateSleepPeriodRequest:
     properties:
@@ -66,19 +65,28 @@ definitions:
         example: 1
         type: integer
     type: object
-host: localhost:8080
+  models.User:
+    description: User account information
+    properties:
+      balance:
+        example: 50
+        type: integer
+      created_at:
+        type: string
+      id:
+        example: 1
+        type: integer
+      rating:
+        example: 100
+        type: integer
+      updated_at:
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
 info:
-  contact:
-    email: support@swagger.io
-    name: API Support
-    url: http://www.swagger.io/support
-  description: A sleep tracking application API
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
-  termsOfService: http://swagger.io/terms/
-  title: Sleep Tracking API
-  version: "1.0"
+  contact: {}
 paths:
   /:
     get:
@@ -123,6 +131,40 @@ paths:
       summary: User login
       tags:
       - auth
+  /auth/logout:
+    post:
+      description: Remove the JWT token from the client side
+      responses:
+        "200":
+          description: Logged out successfully
+          schema:
+            type: string
+      summary: Logout user
+      tags:
+      - auth
+  /auth/me:
+    get:
+      description: Retrieve data of the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get current user data
+      tags:
+      - auth
   /auth/register:
     post:
       consumes:
@@ -161,7 +203,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new sleep period for the authenticated user
+      description: Add a new sleep period for the authenticated user and increse user's
+        balance and rating
       parameters:
       - description: Sleep period data
         in: body
@@ -258,10 +301,4 @@ paths:
       summary: Get sleep periods by user ID
       tags:
       - sleep
-securityDefinitions:
-  BearerAuth:
-    description: Type "Bearer" followed by a space and JWT token.
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"

@@ -18,4 +18,4 @@ func TestAuthenticate(t *testing.T) {
 	if service.Authenticate("user", "wrongpass") {
 		t.Errorf("expected authentication to fail")
 	}
-} 
+}

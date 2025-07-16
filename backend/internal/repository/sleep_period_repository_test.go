@@ -42,7 +42,7 @@ func TestSleepPeriodRepository_Create(t *testing.T) {
 		EndPeriod:   time.Now(),
 		Duration:    28800,
 	}
-	
+
 	err := repo.Create(period)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -52,17 +52,17 @@ func TestSleepPeriodRepository_Create(t *testing.T) {
 func TestSleepPeriodRepository_GetByUserID(t *testing.T) {
 	repo := &mockSleepPeriodRepository{}
 	userID := uint64(1)
-	
+
 	periods, err := repo.GetByUserID(userID)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
-	
+
 	if len(periods) == 0 {
 		t.Error("expected at least one sleep period")
 	}
-	
+
 	if periods[0].UserID != userID {
 		t.Errorf("expected user ID %d, got %d", userID, periods[0].UserID)
 	}
-} 
+}

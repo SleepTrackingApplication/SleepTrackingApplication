@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"net/http"
 	"os"
@@ -23,7 +24,11 @@ type Handler struct {
 	userRepo        repository.UserRepository
 }
 
-func NewHandler(authService auth.AuthService, sleepPeriodRepo repository.SleepPeriodRepository, userRepo repository.UserRepository) *Handler {
+func NewHandler(
+	authService auth.AuthService,
+	sleepPeriodRepo repository.SleepPeriodRepository,
+	userRepo repository.UserRepository,
+) *Handler {
 	return &Handler{
 		authService:     authService,
 		sleepPeriodRepo: sleepPeriodRepo,
@@ -58,7 +63,9 @@ func (h *Handler) SetupRoutes(r *mux.Router) {
 // @Success 200 {string} string "Server started and Database connected."
 // @Router / [get]
 func (h *Handler) homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Server started and Database connected.")
+	if _, err := fmt.Fprintf(w, "Server started and Database connected."); err != nil {
+		log.Printf("Failed to write response: %v", err)
+	}
 }
 
 func (h *Handler) decreaseBalanceHandler(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +114,10 @@ func (h *Handler) decreaseBalanceHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *Handler) getMyPositionHandler(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +146,10 @@ func (h *Handler) getMyPositionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *Handler) getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -165,7 +178,10 @@ func (h *Handler) getLeaderboardHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(leaderboard)
+	if err := json.NewEncoder(w).Encode(leaderboard); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // RegisterHandler godoc
@@ -206,7 +222,10 @@ func (h *Handler) registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{"id": user.ID, "username": user.Username})
+	if err := json.NewEncoder(w).Encode(map[string]interface{}{"id": user.ID, "username": user.Username}); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // LoginHandler godoc
@@ -237,7 +256,10 @@ func (h *Handler) loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
+	if err := json.NewEncoder(w).Encode(map[string]string{"token": token}); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // LogoutHandler godoc
@@ -248,7 +270,9 @@ func (h *Handler) loginHandler(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/logout [post]
 func (h *Handler) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Logged out successfully")
+	if _, err := fmt.Fprintf(w, "Logged out successfully"); err != nil {
+		log.Printf("Failed to write response: %v", err)
+	}
 }
 
 // GetMeHandler godoc
@@ -275,7 +299,10 @@ func (h *Handler) getMeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	if err := json.NewEncoder(w).Encode(user); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // CreateSleepPeriodHandler godoc
@@ -336,7 +363,10 @@ func (h *Handler) createSleepPeriodHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(sleepPeriod)
+	if err := json.NewEncoder(w).Encode(sleepPeriod); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // GetSleepPeriodsHandler godoc
@@ -361,7 +391,10 @@ func (h *Handler) getSleepPeriodsHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(periods)
+	if err := json.NewEncoder(w).Encode(periods); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // GetSleepPeriodsByUserIDHandler godoc
@@ -412,7 +445,10 @@ func (h *Handler) getSleepPeriodsByUserIDHandler(w http.ResponseWriter, r *http.
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(periods)
+	if err := json.NewEncoder(w).Encode(periods); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func getUserIDFromToken(r *http.Request) (uint64, error) {
