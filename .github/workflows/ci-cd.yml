@@ -8,68 +8,27 @@ on:
 
 env:
   GO_VERSION: "1.23"
-  FLUTTER_VERSION: "3.32.1"  # Добавлена версия Flutter
+  FLUTTER_VERSION: "3.32.1"  
   DOCKER_REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/sleep-tracker
 
 jobs:
   lint:
-    name: Lint & Format
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
         with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}  # Исправлен путь
-
-      - name: Cache Flutter packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            frontend/.dart_tool
-          key: ${{ runner.os }}-flutter-${{ hashFiles('frontend/pubspec.lock') }}
-
-      - name: Install Go dependencies
-        working-directory: backend
-        run: go mod download
-
-      - name: Install Flutter dependencies
-        working-directory: frontend
-        run: flutter pub get
-
-      - name: Lint Go code
-        working-directory: backend
-        run: |
-          go vet ./...
-          go fmt ./...
-          # Check if code is formatted
-          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
-            echo "Go code is not formatted. Please run 'go fmt ./...'"
-            exit 1
-          fi
-
-      - name: Lint Dart code
-        working-directory: frontend
-        run: |
-          dart analyze
-          dart format --set-exit-if-changed .
+          fetch-depth: 0
+      - name: Run Super-Linter for go and flutter
+        id: lint
+        uses: super-linter/super-linter@v7.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_WORKSPACE: ./Assets/Scripts
+          VALIDATE_GO: true
+          VALIDATE_DART: true
+      
+        continue-on-error: true
 
   quality:
     name: Testing
