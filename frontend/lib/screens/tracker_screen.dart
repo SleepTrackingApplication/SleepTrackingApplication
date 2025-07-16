@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/utils/sleep_calculator.dart';
 
 class TrackerScreen extends StatefulWidget {
   const TrackerScreen({super.key});
@@ -15,12 +16,12 @@ class _TrackerScreenState extends State<TrackerScreen> {
 
   Future<void> _selectTime(BuildContext context, bool isBedtime) async {
     final initialTime = isBedtime ? _bedtime : _wakeup;
-    
+
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: initialTime,
     );
-    
+
     if (picked != null) {
       setState(() {
         if (isBedtime) {
@@ -34,20 +35,10 @@ class _TrackerScreenState extends State<TrackerScreen> {
   }
 
   void _calculateSleepDuration() {
-    int bedtimeInMinutes = _bedtime.hour * 60 + _bedtime.minute;
-    int wakeupInMinutes = _wakeup.hour * 60 + _wakeup.minute;
-    
-    if (wakeupInMinutes < bedtimeInMinutes) {
-      wakeupInMinutes += 24 * 60;
-    }
-    
-    final totalMinutes = wakeupInMinutes - bedtimeInMinutes;
-    final hours = (totalMinutes / 60).floor();
-    final minutes = (totalMinutes % 60).round();
-    
+    final result = SleepCalculator.calculateSleepDuration(_bedtime, _wakeup);
     setState(() {
-      _totalMinutes = totalMinutes;
-      _sleepDuration = '${hours}h ${minutes}m';
+      _totalMinutes = result.$1;
+      _sleepDuration = result.$2;
     });
   }
 
@@ -61,9 +52,11 @@ class _TrackerScreenState extends State<TrackerScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF2C1A64) : theme.scaffoldBackgroundColor,
+      backgroundColor: isDark
+          ? const Color(0xFF2C1A64)
+          : theme.scaffoldBackgroundColor,
       body: Container(
         decoration: BoxDecoration(
           gradient: isDark
@@ -102,8 +95,8 @@ class _TrackerScreenState extends State<TrackerScreen> {
                       shape: BoxShape.circle,
                       color: Colors.transparent,
                       border: Border.all(
-                        color: isDark 
-                            ? Colors.purpleAccent.withOpacity(0.6) 
+                        color: isDark
+                            ? Colors.purpleAccent.withOpacity(0.6)
                             : Colors.purple[300]!,
                         width: 12,
                       ),
@@ -129,8 +122,8 @@ class _TrackerScreenState extends State<TrackerScreen> {
                           Text(
                             'Sleep Duration',
                             style: TextStyle(
-                              color: isDark 
-                                  ? Colors.white.withOpacity(0.7) 
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.7)
                                   : Colors.black54,
                               fontSize: 16,
                             ),
@@ -144,111 +137,114 @@ class _TrackerScreenState extends State<TrackerScreen> {
                     width: 240,
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: isDark 
-                          ? Colors.white.withOpacity(0.1) 
+                      color: isDark
+                          ? Colors.white.withOpacity(0.1)
                           : const Color.fromARGB(255, 243, 243, 243),
                       borderRadius: BorderRadius.circular(30),
                     ),
-                      child: GestureDetector(
-                          onTap: () => _selectTime(context, true),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 16, 
-                              horizontal: 20,
+                    child: GestureDetector(
+                      onTap: () => _selectTime(context, true),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 20,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.bedtime,
+                              color: isDark
+                                  ? const Color.fromARGB(255, 17, 0, 255)
+                                  : Colors.blue[700],
+                              size: 30,
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                    Icons.bedtime,
-                                    color: isDark 
-                                        ? const Color.fromARGB(255, 17, 0, 255)
-                                        : Colors.blue[700],
-                                    size: 30,
-                                  ),
-                              const SizedBox(width: 15),
-                              Text(
-                                'Bedtime:  ',
-                                style: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black87,
-                                  fontSize: 16,
-                                ),
+                            const SizedBox(width: 15),
+                            Text(
+                              'Bedtime:  ',
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontSize: 16,
                               ),
-                              Text(
-                                _bedtime.format(context),
-                                style: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black87,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            Text(
+                              _bedtime.format(context),
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
+                    ),
                   ),
-                      Container(
-                        width: 240,
-                        decoration: BoxDecoration(
-                          color: isDark 
-                              ? Colors.white.withOpacity(0.1) 
-                              : const Color.fromARGB(255, 243, 243, 243),
-                          borderRadius: BorderRadius.circular(30),
+                  Container(
+                    width: 240,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.1)
+                          : const Color.fromARGB(255, 243, 243, 243),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: GestureDetector(
+                      onTap: () => _selectTime(context, false),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 20,
                         ),
-                        child: GestureDetector(
-                        onTap: () => _selectTime(context, false),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16, 
-                            horizontal: 20,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                                  Icon(
-                                    Icons.wb_sunny,
-                                    color: isDark 
-                                        ? const Color(0xFFF8B320)
-                                        : Colors.orange[700],
-                                    size: 30,
-                                  ),
-                              const SizedBox(width: 15),
-                              Text(
-                                'Wake up:  ',
-                                style: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black87,
-                                  fontSize: 16,
-                                ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.wb_sunny,
+                              color: isDark
+                                  ? const Color(0xFFF8B320)
+                                  : Colors.orange[700],
+                              size: 30,
+                            ),
+                            const SizedBox(width: 15),
+                            Text(
+                              'Wake up:  ',
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontSize: 16,
                               ),
-                              Text(
-                                _wakeup.format(context),
-                                style: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black87,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            Text(
+                              _wakeup.format(context),
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                      ),
+                    ),
+                  ),
                   const SizedBox(height: 40),
                   SizedBox(
                     width: 250,
                     height: 55,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/session',
+                        Navigator.pushNamed(
+                          context,
+                          '/session',
                           arguments: {
-                            'duration' : _totalMinutes,
-                            'startTime' : DateTime.now(),
-                          });
+                            'duration': _totalMinutes,
+                            'startTime': DateTime.now(),
+                          },
+                        );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark 
-                          ? Colors.white.withOpacity(0.8) 
-                          : const Color.fromARGB(255, 243, 243, 243),
+                        backgroundColor: isDark
+                            ? Colors.white.withOpacity(0.8)
+                            : const Color.fromARGB(255, 243, 243, 243),
                         foregroundColor: isDark ? Colors.black : Colors.black87,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(60),
