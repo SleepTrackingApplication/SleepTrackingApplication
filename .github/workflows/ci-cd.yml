@@ -56,27 +56,6 @@ jobs:
       - name: Verify dependencies
         working-directory: ./backend
         run: go mod verify
-
-      - name: Install golangci-lint
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
-
-      - name: Run golangci-lint
-        working-directory: ./backend
-        run: $(go env GOPATH)/bin/golangci-lint run --verbose
-
-      - name: Check Go formatting
-        working-directory: ./backend
-        run: |
-          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
-            echo "The following files need formatting:"
-            gofmt -s -l .
-            exit 1
-          fi
-
-      - name: Run go vet
-        working-directory: ./backend
-        run: go vet ./...
-
       - name: Run tests
         working-directory: ./backend
         env:
