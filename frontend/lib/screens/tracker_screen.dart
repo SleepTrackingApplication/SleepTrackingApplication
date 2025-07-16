@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'session_screen.dart';
 
 class TrackerScreen extends StatefulWidget {
   const TrackerScreen({super.key});
@@ -8,16 +9,13 @@ class TrackerScreen extends StatefulWidget {
 }
 
 class _TrackerScreenState extends State<TrackerScreen> {
-  // Initial values
   TimeOfDay _bedtime = const TimeOfDay(hour: 22, minute: 0);
   TimeOfDay _wakeup = const TimeOfDay(hour: 7, minute: 0);
   String _sleepDuration = '9h 0m';
   int _totalMinutes = 540;
 
-  // Function to select bedtime or wake up time
   Future<void> _selectTime(BuildContext context, bool isBedtime) async {
     final initialTime = isBedtime ? _bedtime : _wakeup;
-    
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: initialTime,
@@ -68,10 +66,7 @@ class _TrackerScreenState extends State<TrackerScreen> {
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [
-              Color(0xFF1A1032),
-              Color(0xFF2C1A64),
-            ],
+            colors: [Color(0xFF1A1032), Color(0xFF2C1A64)],
           ),
         ),
         child: Center(
@@ -142,84 +137,84 @@ class _TrackerScreenState extends State<TrackerScreen> {
                       color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(30),
                     ),
-                      child: GestureDetector(
-                          onTap: () => _selectTime(context, true),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 16, 
-                              horizontal: 20,
+                    child: GestureDetector(
+                      onTap: () => _selectTime(context, true),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16, 
+                          horizontal: 20,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.bedtime,
+                              color: Color.fromARGB(255, 17, 0, 255),
+                              size: 30,
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                    Icons.bedtime,
-                                    color: Color.fromARGB(255, 17, 0, 255),
-                                    size: 30,
-                                  ),
-                              const SizedBox(width: 15),
-                              const Text(
-                                'Bedtime:  ',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
+                            const SizedBox(width: 15),
+                            const Text(
+                              'Bedtime:  ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
                               ),
-                              Text(
-                                _bedtime.format(context),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            Text(
+                              _bedtime.format(context),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
+                    ),
                   ),
-                      Container(
-                        width: 240,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(30),
+                  Container(
+                    width: 240,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: GestureDetector(
+                      onTap: () => _selectTime(context, false),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16, 
+                          horizontal: 20,
                         ),
-                        child: GestureDetector(
-                        onTap: () => _selectTime(context, false),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16, 
-                            horizontal: 20,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                                  Icon(
-                                    Icons.wb_sunny,
-                                    color: Color(0xFFF8B320),
-                                    size: 30,
-                                  ),
-                              const SizedBox(width: 15),
-                              const Text(
-                                'Wake up:  ',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.wb_sunny,
+                              color: Color(0xFFF8B320),
+                              size: 30,
+                            ),
+                            const SizedBox(width: 15),
+                            const Text(
+                              'Wake up:  ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
                               ),
-                              Text(
-                                _wakeup.format(context),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            Text(
+                              _wakeup.format(context),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                      ),
+                    ),
+                  ),
                   
                   const SizedBox(height: 40),
                   
@@ -228,11 +223,14 @@ class _TrackerScreenState extends State<TrackerScreen> {
                     height: 55,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/session',
+                        Navigator.pushNamed(
+                          context,
+                          '/session',
                           arguments: {
-                            'duration' : _totalMinutes,
-                            'startTime' : DateTime.now(),
-                          });
+                            'duration': _totalMinutes * 60,
+                            'startTime': DateTime.now().toUtc(),
+                          },
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white.withOpacity(0.8),
