@@ -152,9 +152,8 @@ jobs:
 
       - name: Build backend
         working-directory: backend
-        run: |
-          CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/server cmd/server/main.go
-          CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/migrate cmd/migrate/main.go
+        run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/server cmd/server/main.go
+  
 
       - name: Build frontend (web)
         working-directory: frontend
