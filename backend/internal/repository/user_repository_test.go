@@ -20,4 +20,4 @@ func TestGetUserByID(t *testing.T) {
 	if user.ID != 1 {
 		t.Errorf("expected user ID 1, got %d", user.ID)
 	}
-} 
+}
