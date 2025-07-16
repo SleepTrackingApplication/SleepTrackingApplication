@@ -14,7 +14,7 @@ import (
 	"backend/internal/repository"
 	"backend/internal/services/auth"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 )
 
@@ -456,16 +456,24 @@ func getUserIDFromToken(r *http.Request) (uint64, error) {
 	if tokenString == "" {
 		return 0, fmt.Errorf("missing token")
 	}
+
+	// Убираем "Bearer " префикс если есть
+	if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+		tokenString = tokenString[7:]
+	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("JWT_KEY")), nil
 	})
 	if err != nil || !token.Valid {
 		return 0, fmt.Errorf("invalid token")
 	}
+
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		return 0, fmt.Errorf("invalid token claims")
 	}
+
 	userID, ok := claims["user_id"].(float64)
 	if !ok {
 		return 0, fmt.Errorf("user_id not found in token")
@@ -479,6 +487,11 @@ func (h *Handler) authMiddleware(next http.Handler) http.Handler {
 		if tokenString == "" {
 			http.Error(w, "Missing token", http.StatusUnauthorized)
 			return
+		}
+
+		// Убираем "Bearer " префикс если есть
+		if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+			tokenString = tokenString[7:]
 		}
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
