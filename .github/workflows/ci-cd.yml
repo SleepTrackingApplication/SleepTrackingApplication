@@ -8,7 +8,7 @@ on:
 
 env:
   GO_VERSION: "1.23"
-  FLUTTER_VERSION: "3.10.0"  # Добавлена версия Flutter
+  FLUTTER_VERSION: "3.32.1"  # Добавлена версия Flutter
   DOCKER_REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/sleep-tracker
 
@@ -28,7 +28,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.8.1
+          flutter-version: ${{ env.FLUTTER_VERSION }}
 
       - name: Cache Go modules
         uses: actions/cache@v4
