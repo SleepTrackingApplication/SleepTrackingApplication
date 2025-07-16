@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop, Dev]
+    branches: [main, Dev]
   pull_request:
-    branches: [main, develop, Dev]
+    branches: [main, Dev]
 
 env:
   GO_VERSION: "1.23"
@@ -66,24 +66,24 @@ jobs:
         run: |
           go test -v -race -coverprofile=coverage.out ./... > test_output.txt 2>&1
 
-      - name: Generate test coverage report
+      - name: Run tests with JSON output
         working-directory: ./backend
-        run: go tool cover -html=coverage.out -o coverage.html
-
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: backend/coverage.html
-
-      - name: Check number of passed tests
-        working-directory: ./backend
-        if: success()
         run: |
-          PASSED_TESTS=$(grep -c "^--- PASS:" test_output.txt)
-          echo "Number of passed tests: $PASSED_TESTS"
+          go test -json -race ./... > test_output.json 2>&1
+
+      - name: Check test results
+        working-directory: ./backend
+        run: |
+          FAILED_TESTS=$(jq -s '[.[] | select(.Action == "fail" and .Test != null)] | length' test_output.json)
+          PASSED_TESTS=$(jq -s '[.[] | select(.Action == "pass" and .Test != null)] | length' test_output.json)
+          echo "Passed tests: $PASSED_TESTS"
+          echo "Failed tests: $FAILED_TESTS"
+          if [ "$FAILED_TESTS" -gt 0 ]; then
+            echo "Есть проваленные тесты!"
+            exit 1
+          fi
           if [ "$PASSED_TESTS" -lt 10 ]; then
-            echo "Number of passed tests is less than 10"
+            echo "Количество прошедших тестов меньше 10!"
             exit 1
           fi
 
@@ -92,7 +92,7 @@ jobs:
         if: always()
         with:
           name: test-output
-          path: backend/test_output.txt
+          path: backend/test_output.json
   build:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
