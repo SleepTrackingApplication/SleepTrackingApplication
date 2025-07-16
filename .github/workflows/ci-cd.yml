@@ -99,12 +99,11 @@ jobs:
         with:
           name: test-output
           path: backend/test_output.json
-
- build:
-  name: Build Applications
-  runs-on: ubuntu-latest
-  needs: quality
-  steps:
+  build:
+    name: Build Applications
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
     - name: Checkout code
       uses: actions/checkout@v4
     - name: Setup Go
