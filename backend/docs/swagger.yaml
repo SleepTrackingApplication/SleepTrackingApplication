@@ -119,7 +119,7 @@ paths:
       summary: Health check
       tags:
       - health
-  /auth/login:
+  /api/auth/login:
     post:
       consumes:
       - application/json
@@ -149,7 +149,7 @@ paths:
       summary: User login
       tags:
       - auth
-  /auth/logout:
+  /api/auth/logout:
     post:
       description: Remove the JWT token from the client side
       responses:
@@ -160,7 +160,7 @@ paths:
       summary: Logout user
       tags:
       - auth
-  /auth/me:
+  /api/auth/me:
     get:
       description: Retrieve data of the authenticated user
       produces:
@@ -183,7 +183,7 @@ paths:
       summary: Get current user data
       tags:
       - auth
-  /auth/register:
+  /api/auth/register:
     post:
       consumes:
       - application/json
@@ -217,7 +217,7 @@ paths:
       summary: Register a new user
       tags:
       - auth
-  /balance/decrease:
+  /api/balance/decrease:
     post:
       consumes:
       - application/json
@@ -253,7 +253,7 @@ paths:
       summary: Decrease user balance
       tags:
       - balance
-  /leaderboard:
+  /api/leaderboard:
     get:
       description: Retrieve the top users by rating
       parameters:
@@ -281,7 +281,7 @@ paths:
       summary: Get leaderboard
       tags:
       - leaderboard
-  /myposition:
+  /api/myposition:
     get:
       description: Retrieve the position of the authenticated user in the leaderboard
       produces:
@@ -304,7 +304,7 @@ paths:
       summary: Get my position in leaderboard
       tags:
       - leaderboard
-  /sleep/period:
+  /api/sleep/period:
     post:
       consumes:
       - application/json
@@ -341,7 +341,7 @@ paths:
       summary: Create a new sleep period
       tags:
       - sleep
-  /sleep/periods:
+  /api/sleep/periods:
     get:
       description: Retrieve all sleep periods for the authenticated user
       produces:
@@ -366,7 +366,7 @@ paths:
       summary: Get user's sleep periods
       tags:
       - sleep
-  /sleep/periods/{user_id}:
+  /api/sleep/periods/{user_id}:
     get:
       description: Retrieve sleep periods for a specific user (must be the authenticated
         user)

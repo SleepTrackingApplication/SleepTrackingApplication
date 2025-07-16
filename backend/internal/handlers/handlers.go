@@ -80,7 +80,7 @@ func (h *Handler) homeHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Internal Server Error"
 // @Security BearerAuth
-// @Router /balance/decrease [post]
+// @Router /api/balance/decrease [post]
 func (h *Handler) decreaseBalanceHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserIDFromToken(r)
 	if err != nil {
@@ -142,7 +142,7 @@ func (h *Handler) decreaseBalanceHandler(w http.ResponseWriter, r *http.Request)
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Internal Server Error"
 // @Security BearerAuth
-// @Router /myposition [get]
+// @Router /api/myposition [get]
 func (h *Handler) getMyPositionHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserIDFromToken(r)
 	if err != nil {
@@ -184,7 +184,7 @@ func (h *Handler) getMyPositionHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {array} models.User
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /leaderboard [get]
+// @Router /api/leaderboard [get]
 func (h *Handler) getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	limitStr := r.URL.Query().Get("limit")
 	var limit int
@@ -228,7 +228,7 @@ func (h *Handler) getLeaderboardHandler(w http.ResponseWriter, r *http.Request) 
 // @Failure 400 {string} string "Bad Request"
 // @Failure 409 {string} string "Username already exists"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /auth/register [post]
+// @Router /api/auth/register [post]
 func (h *Handler) registerHandler(w http.ResponseWriter, r *http.Request) {
 	if h.authService == nil {
 		http.Error(w, "Internal server error: auth service not initialized", http.StatusInternalServerError)
@@ -271,7 +271,7 @@ func (h *Handler) registerHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} TokenResponse
 // @Failure 400 {string} string "Bad Request"
 // @Failure 401 {string} string "Unauthorized"
-// @Router /auth/login [post]
+// @Router /api/auth/login [post]
 func (h *Handler) loginHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Username string `json:"username"`
@@ -300,7 +300,7 @@ func (h *Handler) loginHandler(w http.ResponseWriter, r *http.Request) {
 // @Description Remove the JWT token from the client side
 // @Tags auth
 // @Success 200 {string} string "Logged out successfully"
-// @Router /auth/logout [post]
+// @Router /api/auth/logout [post]
 func (h *Handler) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if _, err := fmt.Fprintf(w, "Logged out successfully"); err != nil {
@@ -317,7 +317,7 @@ func (h *Handler) logoutHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Internal Server Error"
 // @Security BearerAuth
-// @Router /auth/me [get]
+// @Router /api/auth/me [get]
 func (h *Handler) getMeHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserIDFromToken(r)
 	if err != nil {
@@ -350,7 +350,7 @@ func (h *Handler) getMeHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Internal Server Error"
 // @Security BearerAuth
-// @Router /sleep/period [post]
+// @Router /api/sleep/period [post]
 func (h *Handler) createSleepPeriodHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserIDFromToken(r)
 	if err != nil {
@@ -411,7 +411,7 @@ func (h *Handler) createSleepPeriodHandler(w http.ResponseWriter, r *http.Reques
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Internal Server Error"
 // @Security BearerAuth
-// @Router /sleep/periods [get]
+// @Router /api/sleep/periods [get]
 func (h *Handler) getSleepPeriodsHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserIDFromToken(r)
 	if err != nil {
@@ -442,7 +442,7 @@ func (h *Handler) getSleepPeriodsHandler(w http.ResponseWriter, r *http.Request)
 // @Failure 403 {string} string "Forbidden"
 // @Failure 500 {string} string "Internal Server Error"
 // @Security BearerAuth
-// @Router /sleep/periods/{user_id} [get]
+// @Router /api/sleep/periods/{user_id} [get]
 func (h *Handler) getSleepPeriodsByUserIDHandler(w http.ResponseWriter, r *http.Request) {
 	// Извлекаем user_id из URL
 	vars := mux.Vars(r)

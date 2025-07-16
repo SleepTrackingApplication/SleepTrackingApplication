@@ -24,7 +24,7 @@
                 }
             }
         },
-        "/auth/login": {
+        "/api/auth/login": {
             "post": {
                 "description": "Authenticate user and return JWT token",
                 "consumes": [
@@ -70,7 +70,7 @@
                 }
             }
         },
-        "/auth/logout": {
+        "/api/auth/logout": {
             "post": {
                 "description": "Remove the JWT token from the client side",
                 "tags": [
@@ -87,7 +87,7 @@
                 }
             }
         },
-        "/auth/me": {
+        "/api/auth/me": {
             "get": {
                 "security": [
                     {
@@ -124,7 +124,7 @@
                 }
             }
         },
-        "/auth/register": {
+        "/api/auth/register": {
             "post": {
                 "description": "Create a new user account",
                 "consumes": [
@@ -176,7 +176,7 @@
                 }
             }
         },
-        "/balance/decrease": {
+        "/api/balance/decrease": {
             "post": {
                 "security": [
                     {
@@ -233,7 +233,7 @@
                 }
             }
         },
-        "/leaderboard": {
+        "/api/leaderboard": {
             "get": {
                 "description": "Retrieve the top users by rating",
                 "produces": [
@@ -276,7 +276,7 @@
                 }
             }
         },
-        "/myposition": {
+        "/api/myposition": {
             "get": {
                 "security": [
                     {
@@ -313,7 +313,7 @@
                 }
             }
         },
-        "/sleep/period": {
+        "/api/sleep/period": {
             "post": {
                 "security": [
                     {
@@ -370,7 +370,7 @@
                 }
             }
         },
-        "/sleep/periods": {
+        "/api/sleep/periods": {
             "get": {
                 "security": [
                     {
@@ -410,7 +410,7 @@
                 }
             }
         },
-        "/sleep/periods/{user_id}": {
+        "/api/sleep/periods/{user_id}": {
             "get": {
                 "security": [
                     {

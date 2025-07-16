@@ -35,7 +35,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/login": {
+        "/api/auth/login": {
             "post": {
                 "description": "Authenticate user and return JWT token",
                 "consumes": [
@@ -81,7 +81,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/logout": {
+        "/api/auth/logout": {
             "post": {
                 "description": "Remove the JWT token from the client side",
                 "tags": [
@@ -98,7 +98,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/me": {
+        "/api/auth/me": {
             "get": {
                 "security": [
                     {
@@ -135,7 +135,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register": {
+        "/api/auth/register": {
             "post": {
                 "description": "Create a new user account",
                 "consumes": [
@@ -187,7 +187,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/balance/decrease": {
+        "/api/balance/decrease": {
             "post": {
                 "security": [
                     {
@@ -244,7 +244,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/leaderboard": {
+        "/api/leaderboard": {
             "get": {
                 "description": "Retrieve the top users by rating",
                 "produces": [
@@ -287,7 +287,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/myposition": {
+        "/api/myposition": {
             "get": {
                 "security": [
                     {
@@ -324,7 +324,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sleep/period": {
+        "/api/sleep/period": {
             "post": {
                 "security": [
                     {
@@ -381,7 +381,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sleep/periods": {
+        "/api/sleep/periods": {
             "get": {
                 "security": [
                     {
@@ -421,7 +421,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sleep/periods/{user_id}": {
+        "/api/sleep/periods/{user_id}": {
             "get": {
                 "security": [
                     {
