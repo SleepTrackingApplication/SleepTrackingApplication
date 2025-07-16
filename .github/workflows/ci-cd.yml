@@ -152,7 +152,7 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ env.DOCKER_REGISTRY }}/${{ toLower(github.repository) }}/sleep-tracker:latest
+        tags: ${{ env.DOCKER_REGISTRY }}/${{ toLowercase(github.repository) }}/sleep-tracker:latest
     - name: Upload backend artifacts
       uses: actions/upload-artifact@v4
       with:
