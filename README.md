@@ -1,15 +1,13 @@
 # SleepTrackingApplication
 Project for sum-25 Go-Flutter course
 ## Project overview
-We create a web application for track sleep periods of users, with rating system that now uses sleep hours as a rating.
+We create a web application for track sleep periods of users, with rating system that uses sleep hours as a rating.
 ## Team
-### Frontend
-- Ekaterina Zhidkova, also a team leader
-- Anna Morozova
-- Anastasia Varfolomeeva
-### Backend
-- Botalov Egor
-- Vsevolod Nazmudinov, also DevOps
+- Ekaterina Zhidkova, team leader, frontend-developer of screens, light/dark themes, and animations
+- Anna Morozova, frontend-developer, working with connection of backend and frontend
+- Anastasia Varfolomeeva, frontend-developer, is responsible for creating tests for Flutter
+- Botalov Egor, backend-developer, working with API, database, JWT-based authentication and authorization
+- Vsevolod Nazmudinov, DevOps, backend-developer, working with API, create Swagger documentation
 ## Setup instructions
 1. Dowload the Docker from [official website](official website), and remeber the login and password
 2. Clone the repo, run in cmd `git clone https://github.com/SleepTrackingApplication/SleepTrackingApplication`
