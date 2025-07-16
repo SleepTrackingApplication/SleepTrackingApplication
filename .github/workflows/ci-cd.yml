@@ -12,8 +12,64 @@ env:
   IMAGE_NAME: ${{ github.repository }}/sleep-tracker
 
 jobs:
-  quality:
-    name: Code Quality & Testing
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
+
+      - name: Cache Flutter packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            frontend/.dart_tool
+          key: ${{ runner.os }}-flutter-${{ hashFiles('frontend/pubspec.lock') }}
+
+      - name: Install Go dependencies
+        working-directory: backend
+        run: go mod download
+
+      - name: Install Flutter dependencies
+        working-directory: frontend
+        run: flutter pub get
+
+      - name: Lint Go code
+        working-directory: backend
+        run: |
+          go vet ./...
+          go fmt ./...
+          # Check if code is formatted
+          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+            echo "Go code is not formatted. Please run 'go fmt ./...'"
+            exit 1
+          fi
+      - name: Lint Dart code
+        working-directory: frontend
+        run: |
+          dart analyze
+          dart format --set-exit-if-changed .
+quality:
+    name: Testing
     runs-on: ubuntu-latest
 
     services:
@@ -96,6 +152,7 @@ jobs:
   build:
     name: Build Applications
     runs-on: ubuntu-latest
+    needs: quality
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -158,6 +215,7 @@ jobs:
   cleanup:
     name: Cleanup
     runs-on: ubuntu-latest
+    needs: build
     if: always()
 
     steps:
