@@ -1,4 +1,10 @@
 definitions:
+  handlers.BalanceResponse:
+    properties:
+      balance:
+        example: 90
+        type: integer
+    type: object
   handlers.CreateSleepPeriodRequest:
     properties:
       duration:
@@ -11,6 +17,12 @@ definitions:
         example: "2023-12-01T22:00:00Z"
         type: string
     type: object
+  handlers.DecreaseBalanceRequest:
+    properties:
+      amount:
+        example: 10
+        type: integer
+    type: object
   handlers.LoginRequest:
     properties:
       password:
@@ -19,6 +31,12 @@ definitions:
       username:
         example: john_doe
         type: string
+    type: object
+  handlers.PositionResponse:
+    properties:
+      position:
+        example: 5
+        type: integer
     type: object
   handlers.RegisterRequest:
     properties:
@@ -199,6 +217,93 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /balance/decrease:
+    post:
+      consumes:
+      - application/json
+      description: Decrease the balance of the authenticated user by a specified amount
+      parameters:
+      - description: Amount to decrease
+        in: body
+        name: amount
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.DecreaseBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.BalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Decrease user balance
+      tags:
+      - balance
+  /leaderboard:
+    get:
+      description: Retrieve the top users by rating
+      parameters:
+      - description: Limit the number of results (default 10, max 100)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get leaderboard
+      tags:
+      - leaderboard
+  /myposition:
+    get:
+      description: Retrieve the position of the authenticated user in the leaderboard
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PositionResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get my position in leaderboard
+      tags:
+      - leaderboard
   /sleep/period:
     post:
       consumes:

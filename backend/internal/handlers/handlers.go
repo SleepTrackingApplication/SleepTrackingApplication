@@ -68,6 +68,19 @@ func (h *Handler) homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// DecreaseBalanceHandler godoc
+// @Summary Decrease user balance
+// @Description Decrease the balance of the authenticated user by a specified amount
+// @Tags balance
+// @Accept json
+// @Produce json
+// @Param amount body DecreaseBalanceRequest true "Amount to decrease"
+// @Success 200 {object} BalanceResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Security BearerAuth
+// @Router /balance/decrease [post]
 func (h *Handler) decreaseBalanceHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserIDFromToken(r)
 	if err != nil {
@@ -120,6 +133,16 @@ func (h *Handler) decreaseBalanceHandler(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+// GetMyPositionHandler godoc
+// @Summary Get my position in leaderboard
+// @Description Retrieve the position of the authenticated user in the leaderboard
+// @Tags leaderboard
+// @Produce json
+// @Success 200 {object} PositionResponse
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Security BearerAuth
+// @Router /myposition [get]
 func (h *Handler) getMyPositionHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserIDFromToken(r)
 	if err != nil {
@@ -152,6 +175,16 @@ func (h *Handler) getMyPositionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetLeaderboardHandler godoc
+// @Summary Get leaderboard
+// @Description Retrieve the top users by rating
+// @Tags leaderboard
+// @Produce json
+// @Param limit query int false "Limit the number of results (default 10, max 100)"
+// @Success 200 {array} models.User
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /leaderboard [get]
 func (h *Handler) getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	limitStr := r.URL.Query().Get("limit")
 	var limit int
@@ -507,6 +540,7 @@ func (h *Handler) authMiddleware(next http.Handler) http.Handler {
 }
 
 // Request/Response models for Swagger documentation
+// Request/Response models for Swagger documentation
 type RegisterRequest struct {
 	Username string `json:"username" example:"john_doe"`
 	Password string `json:"password" example:"password123"`
@@ -530,4 +564,16 @@ type CreateSleepPeriodRequest struct {
 	StartPeriod string `json:"start_period" example:"2023-12-01T22:00:00Z"`
 	EndPeriod   string `json:"end_period" example:"2023-12-02T06:00:00Z"`
 	Duration    int64  `json:"duration" example:"28800"`
+}
+
+type DecreaseBalanceRequest struct {
+	Amount int64 `json:"amount" example:"10"`
+}
+
+type BalanceResponse struct {
+	Balance int64 `json:"balance" example:"90"`
+}
+
+type PositionResponse struct {
+	Position int64 `json:"position" example:"5"`
 }
