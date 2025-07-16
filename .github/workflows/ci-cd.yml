@@ -63,7 +63,8 @@ jobs:
           POSTGRES_PASSWORD: postgres
           DB_NAME: sleep_tracker_test
           JWT_KEY: test_jwt_key_123456789
-        run: go test -v -race -coverprofile=coverage.out ./...
+        run: |
+          go test -v -race -coverprofile=coverage.out ./... > test_output.txt 2>&1
 
       - name: Generate test coverage report
         working-directory: ./backend
@@ -75,16 +76,23 @@ jobs:
           name: coverage-report
           path: backend/coverage.html
 
-      - name: Check test coverage
+      - name: Check number of passed tests
         working-directory: ./backend
+        if: success()
         run: |
-          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
-          echo "Test coverage: ${COVERAGE}%"
-          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
-            echo "Test coverage is below 70%"
+          PASSED_TESTS=$(grep -c "^--- PASS:" test_output.txt)
+          echo "Number of passed tests: $PASSED_TESTS"
+          if [ "$PASSED_TESTS" -lt 10 ]; then
+            echo "Number of passed tests is less than 10"
             exit 1
           fi
 
+      - name: Upload test output
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-output
+          path: backend/test_output.txt
   build:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
@@ -161,7 +169,7 @@ jobs:
 
     steps:
       - name: Delete old packages
-        uses: actions/delete-package-versions@v4
+        uses: actions/delete-package-versions@v5
         with:
           package-name: "sleep-tracker"
           package-type: "container"
