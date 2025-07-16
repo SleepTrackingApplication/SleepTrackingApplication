@@ -24,10 +24,8 @@ jobs:
         uses: super-linter/super-linter@v7.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEFAULT_WORKSPACE: ./Assets/Scripts
           VALIDATE_GO: true
           VALIDATE_DART: true
-      
         continue-on-error: true
 
   quality:
