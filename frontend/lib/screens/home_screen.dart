@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'registration_screen.dart';
 
-// Class HomeScreen represents main screen of app
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -9,19 +8,23 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
-    // A blueprint for the future for creating a light-themed switcher
-    final gradientColors = Theme.of(context).brightness == Brightness.dark
-        ? [Color(0xFF1A1032), Color(0xFF2C1A64)]
-        : [Colors.purple.shade100, Colors.blue.shade100];
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: gradientColors,
-          ),
+          gradient: isDark
+              ? const LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Color(0xFF1A1032), Color(0xFF2C1A64)],
+                )
+              : LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Colors.purple.shade100, Colors.blue.shade100],
+                ),
         ),
         child: Center(
           child: ConstrainedBox(
@@ -33,7 +36,6 @@ class HomeScreen extends StatelessWidget {
               children: [
                 const Padding(
                   padding: EdgeInsets.only(bottom: 30),
-                  // Text for app name
                   child: Text(
                     'Sleep Tracking',
                     style: TextStyle(
@@ -50,7 +52,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Container with icon for app (icon is from Figma)
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
@@ -65,13 +66,11 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Block for three buttons
                 Padding(
                   padding: const EdgeInsets.only(top: 40),
                   child: Column(
                     children: [
-                      // Register button with transfer to registration screen
-                      _buildButton(context, 'Register', Colors.white, () {
+                      _buildButton(context, 'Register', isDark ? Colors.white : const Color.fromARGB(255, 243, 243, 243), () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -79,15 +78,12 @@ class HomeScreen extends StatelessWidget {
                           ),
                         );
                       }),
-                      // The indentation between the buttons
                       const SizedBox(height: 15),
-                      // Login button with transfer to login screen
-                      _buildButton(context, 'Log in', Colors.white, () {
+                      _buildButton(context, 'Log in', isDark ? Colors.white : const Color.fromARGB(255, 243, 243, 243), () {
                         Navigator.pushNamed(context, '/login');
                       }),
                       const SizedBox(height: 15),
-                      // Exit button, just shows alert that this button was used; it will be changed for real functionaly later
-                      _buildButton(context, 'Exit', Colors.white, () {
+                      _buildButton(context, 'Exit', isDark ? Colors.white : const Color.fromARGB(255, 243, 243, 243), () {
                         _showSnackbar(context, 'Exit');
                       }),
                     ],
@@ -101,7 +97,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Helpful class to create buttons
   Widget _buildButton(BuildContext context, String text, Color color, VoidCallback onPressed) {
     return SizedBox(
       width: 300,
@@ -128,7 +123,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Method to show alerts (for exit button in this case)
   void _showSnackbar(BuildContext context, String text) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

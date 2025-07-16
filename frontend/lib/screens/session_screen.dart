@@ -58,12 +58,16 @@ class _SessionScreenState extends State<SessionScreen> {
 
 @override
 Widget build(BuildContext context) {
-  // Show loading indicator, while getting data from tracker_screen to avoid error
+  final theme = Theme.of(context);
+  final isDark = theme.brightness == Brightness.dark;
+  
   if (_totalDuration == null || _startTime == null) {
-    return const Scaffold(
-      backgroundColor: Color(0xFF2C1A64),
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF2C1A64) : theme.scaffoldBackgroundColor,
       body: Center(
-        child: CircularProgressIndicator(color: Colors.white),
+        child: CircularProgressIndicator(
+          color: isDark ? Colors.white : Colors.purple,
+        ),
       ),
     );
   }
@@ -75,72 +79,73 @@ Widget build(BuildContext context) {
   final seconds = (remainingSeconds % 60).abs();
 
   return Scaffold(
-    backgroundColor: const Color(0xFF2C1A64),
+    backgroundColor: isDark ? const Color(0xFF2C1A64) : theme.scaffoldBackgroundColor,
     body: Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [
-            Color(0xFF1A1032),
-            Color(0xFF2C1A64),
-          ],
-        ),
+      decoration: BoxDecoration(
+        gradient: isDark
+            ? const LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [Color(0xFF1A1032), Color(0xFF2C1A64)],
+              )
+            : LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [Colors.purple.shade100, Colors.blue.shade100],
+              ),
       ),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-                    'Sleep Tracking',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+            Text(
+              'Sleep Tracking',
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
             Text(
               isCompleted ? "Session Completed!" : "Sleep Session",
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 40),
-            // Timer
             Text(
               isCompleted
                   ? "00:00:00"
                   : "${hours.toString().padLeft(2, '0')}:"
                       "${minutes.toString().padLeft(2, '0')}:"
                       "${seconds.toString().padLeft(2, '0')}",
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 40),
-            // Button to finish session
             SizedBox(
               width: 200,
               height: 50,
               child: ElevatedButton(
                 onPressed: _stopSession,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
+                  backgroundColor: isDark ? Colors.white : const Color.fromARGB(255, 243, 243, 243),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   "End Session",
                   style: TextStyle(
                     fontSize: 18, 
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: isDark ? Colors.black : Colors.black87,
                     ),
                 ),
               ),

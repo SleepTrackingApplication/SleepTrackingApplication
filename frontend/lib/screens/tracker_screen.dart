@@ -8,13 +8,11 @@ class TrackerScreen extends StatefulWidget {
 }
 
 class _TrackerScreenState extends State<TrackerScreen> {
-  // Initial values
   TimeOfDay _bedtime = const TimeOfDay(hour: 22, minute: 0);
   TimeOfDay _wakeup = const TimeOfDay(hour: 7, minute: 0);
   String _sleepDuration = '9h 0m';
   int _totalMinutes = 540;
 
-  // Function to select bedtime or wake up time
   Future<void> _selectTime(BuildContext context, bool isBedtime) async {
     final initialTime = isBedtime ? _bedtime : _wakeup;
     
@@ -61,18 +59,24 @@ class _TrackerScreenState extends State<TrackerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFF2C1A64),
+      backgroundColor: isDark ? const Color(0xFF2C1A64) : theme.scaffoldBackgroundColor,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [
-              Color(0xFF1A1032),
-              Color(0xFF2C1A64),
-            ],
-          ),
+        decoration: BoxDecoration(
+          gradient: isDark
+              ? const LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Color(0xFF1A1032), Color(0xFF2C1A64)],
+                )
+              : LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Colors.purple.shade100, Colors.blue.shade100],
+                ),
         ),
         child: Center(
           child: SingleChildScrollView(
@@ -82,16 +86,15 @@ class _TrackerScreenState extends State<TrackerScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Sleep Tracking',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: isDark ? Colors.white : Colors.black87,
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 40),
-                  
                   Container(
                     width: 250,
                     height: 250,
@@ -99,7 +102,9 @@ class _TrackerScreenState extends State<TrackerScreen> {
                       shape: BoxShape.circle,
                       color: Colors.transparent,
                       border: Border.all(
-                        color: Colors.purpleAccent.withOpacity(0.6),
+                        color: isDark 
+                            ? Colors.purpleAccent.withOpacity(0.6) 
+                            : Colors.purple[300]!,
                         width: 12,
                       ),
                     ),
@@ -107,16 +112,16 @@ class _TrackerScreenState extends State<TrackerScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.bedtime_outlined,
-                            color: Colors.white,
+                            color: isDark ? Colors.white : Colors.black87,
                             size: 50,
                           ),
                           const SizedBox(height: 15),
                           Text(
                             _sleepDuration,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
                               fontSize: 36,
                               fontWeight: FontWeight.bold,
                             ),
@@ -124,7 +129,9 @@ class _TrackerScreenState extends State<TrackerScreen> {
                           Text(
                             'Sleep Duration',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: isDark 
+                                  ? Colors.white.withOpacity(0.7) 
+                                  : Colors.black54,
                               fontSize: 16,
                             ),
                           ),
@@ -132,14 +139,14 @@ class _TrackerScreenState extends State<TrackerScreen> {
                       ),
                     ),
                   ),
-                  
                   const SizedBox(height: 40),
-
                   Container(
                     width: 240,
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: isDark 
+                          ? Colors.white.withOpacity(0.1) 
+                          : const Color.fromARGB(255, 243, 243, 243),
                       borderRadius: BorderRadius.circular(30),
                     ),
                       child: GestureDetector(
@@ -154,21 +161,23 @@ class _TrackerScreenState extends State<TrackerScreen> {
                               children: [
                                 Icon(
                                     Icons.bedtime,
-                                    color: Color.fromARGB(255, 17, 0, 255),
+                                    color: isDark 
+                                        ? const Color.fromARGB(255, 17, 0, 255)
+                                        : Colors.blue[700],
                                     size: 30,
                                   ),
                               const SizedBox(width: 15),
-                              const Text(
+                              Text(
                                 'Bedtime:  ',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: isDark ? Colors.white : Colors.black87,
                                   fontSize: 16,
                                 ),
                               ),
                               Text(
                                 _bedtime.format(context),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black87,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -181,7 +190,9 @@ class _TrackerScreenState extends State<TrackerScreen> {
                       Container(
                         width: 240,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: isDark 
+                              ? Colors.white.withOpacity(0.1) 
+                              : const Color.fromARGB(255, 243, 243, 243),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: GestureDetector(
@@ -196,21 +207,23 @@ class _TrackerScreenState extends State<TrackerScreen> {
                             children: [
                                   Icon(
                                     Icons.wb_sunny,
-                                    color: Color(0xFFF8B320),
+                                    color: isDark 
+                                        ? const Color(0xFFF8B320)
+                                        : Colors.orange[700],
                                     size: 30,
                                   ),
                               const SizedBox(width: 15),
-                              const Text(
+                              Text(
                                 'Wake up:  ',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: isDark ? Colors.white : Colors.black87,
                                   fontSize: 16,
                                 ),
                               ),
                               Text(
                                 _wakeup.format(context),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black87,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -220,9 +233,7 @@ class _TrackerScreenState extends State<TrackerScreen> {
                         ),
                       ),
                       ),
-                  
                   const SizedBox(height: 40),
-                  
                   SizedBox(
                     width: 250,
                     height: 55,
@@ -235,19 +246,22 @@ class _TrackerScreenState extends State<TrackerScreen> {
                           });
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.8),
-                        foregroundColor: Colors.black,
+                        backgroundColor: isDark 
+                          ? Colors.white.withOpacity(0.8) 
+                          : const Color.fromARGB(255, 243, 243, 243),
+                        foregroundColor: isDark ? Colors.black : Colors.black87,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(60),
                         ),
                         elevation: 8,
                         shadowColor: Colors.black.withOpacity(0.5),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Start session',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.black : Colors.black87,
                         ),
                       ),
                     ),

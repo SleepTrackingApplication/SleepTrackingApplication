@@ -8,7 +8,6 @@ class LeaderboardScreen extends StatefulWidget {
 }
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
-  // Temporary data (in the real application it will be loaded from the backend)
   final List<Map<String, dynamic>> _leaderboardData = [
     {'rank': 1, 'username': 'SleepMaster', 'balance': 2450},
     {'rank': 2, 'username': 'Dream', 'balance': 2300},
@@ -24,19 +23,25 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [
-              Color(0xFF1A1032),
-              Color(0xFF2C1A64),
-            ],
-          ),
+        decoration: BoxDecoration(
+          gradient: isDark
+              ? const LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Color(0xFF1A1032), Color(0xFF2C1A64)],
+                )
+              : LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Colors.purple.shade100, Colors.blue.shade100],
+                ),
         ),
         child: SafeArea(
           child: Padding(
@@ -44,19 +49,19 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   'Sleep Tracking',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: isDark ? Colors.white : Colors.black87,
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'Leaderboard',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: isDark ? Colors.white : Colors.black87,
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
                   ),
@@ -67,9 +72,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildHeaderText('Place'),
-                      _buildHeaderText('Username'),
-                      _buildHeaderText('Balance'),
+                      _buildHeaderText('Place', isDark),
+                      _buildHeaderText('Username', isDark),
+                      _buildHeaderText('Balance', isDark),
                     ],
                   ),
                 ),
@@ -78,7 +83,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   child: ListView.separated(
                     itemCount: _leaderboardData.length,
                     separatorBuilder: (context, index) => Divider(
-                      color: Colors.purpleAccent.withOpacity(0.2),
+                      color: isDark 
+                          ? Colors.purpleAccent.withOpacity(0.2) 
+                          : Colors.purple[200],
                       height: 1,
                     ),
                     itemBuilder: (context, index) {
@@ -96,8 +103,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               '${entry['rank']}',
                               style: TextStyle(
                                 color: isTopThree 
-                                    ? Colors.white 
-                                    : const Color.fromARGB(179, 180, 180, 180),
+                                    ? (isDark ? Colors.white : Colors.black87)
+                                    : (isDark ? const Color.fromARGB(179, 180, 180, 180) : Colors.grey[700]),
                                 fontSize: 20,
                                 fontWeight: isTopThree 
                                     ? FontWeight.bold 
@@ -108,8 +115,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               entry['username'],
                               style: TextStyle(
                                 color: isTopThree 
-                                    ? Colors.white 
-                                    : const Color.fromARGB(179, 180, 180, 180),
+                                    ? (isDark ? Colors.white : Colors.black87)
+                                    : (isDark ? const Color.fromARGB(179, 180, 180, 180) : Colors.grey[700]),
                                 fontSize: 18,
                                 fontWeight: isTopThree 
                                     ? FontWeight.bold 
@@ -120,8 +127,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               '${entry['balance']}',
                               style: TextStyle(
                                 color: isTopThree 
-                                    ? Colors.white 
-                                    : const Color.fromARGB(179, 180, 180, 180),
+                                    ? (isDark ? Colors.white : Colors.black87)
+                                    : (isDark ? const Color.fromARGB(179, 180, 180, 180) : Colors.grey[700]),
                                 fontSize: 18,
                                 fontWeight: isTopThree 
                                     ? FontWeight.bold 
@@ -142,12 +149,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
-  // Column headers
-  Widget _buildHeaderText(String text) {
+  Widget _buildHeaderText(String text, bool isDark) {
     return Text(
       text,
       style: TextStyle(
-        color: Colors.purpleAccent.withOpacity(0.8),
+        color: isDark 
+            ? Colors.purpleAccent.withOpacity(0.8) 
+            : Colors.purple[700],
         fontSize: 18,
         fontWeight: FontWeight.w500,
       ),
