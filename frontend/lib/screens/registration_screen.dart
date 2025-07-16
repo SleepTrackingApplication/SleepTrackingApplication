@@ -161,29 +161,31 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         SizedBox(
                           width: 300,
                           height: 55,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _register,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isDark
+                          child: HoverScaleAnimation(
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _register,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isDark
                                   ? Colors.white.withOpacity(0.8)
                                   : const Color.fromARGB(255, 243, 243, 243),
-                              foregroundColor: isDark ? Colors.black : Colors.black87,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(60),
+                                foregroundColor: isDark ? Colors.black : Colors.black87,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(60),
+                                ),
+                                elevation: 8,
+                                shadowColor: Colors.black.withOpacity(0.5),
                               ),
-                              elevation: 8,
-                              shadowColor: Colors.black.withOpacity(0.5),
-                            ),
                             child: _isLoading
-                                ? const CircularProgressIndicator(color: Colors.black)
-                                : Text(
-                                    'Register',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: isDark ? Colors.black : Colors.black87,
-                                    ),
-                                  ),
+                              ? const CircularProgressIndicator(color: Colors.black)
+                              : Text(
+                                'Register',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.black : Colors.black87,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -252,6 +254,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+// Zoom in on hover (for buttons)
+class HoverScaleAnimation extends StatefulWidget {
+  final Widget child;
+  const HoverScaleAnimation({super.key, required this.child});
+
+  @override
+  State<HoverScaleAnimation> createState() => _HoverScaleAnimationState();
+}
+
+class _HoverScaleAnimationState extends State<HoverScaleAnimation> {
+  bool _isHovered = false;
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 200),
+        scale: _isHovered ? 1.05 : 1.0,
+        curve: Curves.easeOutBack,
+        child: widget.child,
+      ),
     );
   }
 }
