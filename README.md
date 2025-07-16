@@ -58,7 +58,7 @@ Below the structure of PostgreSQL database, we use 1:N relationship becasue 1 us
 ## CI/CD pipeline 
 
 ### GitHub Actions [Link](https://github.com/SleepTrackingApplication/SleepTrackingApplication/actions)
-### Source `.yml` file [Link](.github/workflows/ci.yml)
+### Source `.yml` file [Link](.github/workflows/ci-cd.yml)
 ##  Testing
 - You can see rusult of tests in CI/CD pipeline
 ### How to run tests locally
