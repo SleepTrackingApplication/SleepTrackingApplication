@@ -89,7 +89,8 @@ Below the structure of PostgreSQL database, we use 1:N relationship becasue 1 us
 [Link3](https://github.com/SleepTrackingApplication/SleepTrackingApplication/tree/Dev/backend/internal/repository)
 [Link4](https://github.com/SleepTrackingApplication/SleepTrackingApplication/blob/Dev/backend/internal/services/auth/auth_service_test.go)
 
-#### Frontend development (8 points)
+
+### Frontend Development (8 points)
 - [ ] Flutter-based cross-platform application (mobile + web) (3 points)
 - [x] Responsive UI design with custom widgets (1 point)
 [Link](https://github.com/SleepTrackingApplication/SleepTrackingApplication/blob/flutter-animations/frontend/lib/screens/home_screen.dart)
@@ -100,6 +101,7 @@ Below the structure of PostgreSQL database, we use 1:N relationship becasue 1 us
 [Link](https://github.com/SleepTrackingApplication/SleepTrackingApplication/commit/cf2384dfd81b41ed840b9ae32fcf7678abe26bf2)
 - [x] Support light and dark mode (1 point)
 [Link](https://github.com/SleepTrackingApplication/SleepTrackingApplication/tree/flutter-animations/frontend/lib) (You can switch theme from user account)
+
 
 #### DevOps & deployment (4 points)
 - [x] Docker compose for all services (1 point)
