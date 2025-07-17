@@ -1,0 +1,56 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:17-alpine
+    container_name: sleep_tracker_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=sleep_tracker
+      - POSTGRES_HOST_AUTH_METHOD=${POSTGRES_HOST_AUTH_METHOD:-trust}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "sleep_tracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sleep_tracker_network
+
+  # Main Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sleep_tracker_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - JWT_KEY=${JWT_KEY:-supersecretjwtkey123456789}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - DB_HOST=db
+    env_file:
+      - ./configs/${ENVIRONMENT:-development}.env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "sh", "-c", "nc -z localhost 8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - sleep_tracker_network
+
+networks:
+  sleep_tracker_network:
+    driver: bridge
+
+volumes:
+  pgdata:

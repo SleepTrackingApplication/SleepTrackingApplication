@@ -1,0 +1,169 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, Dev]
+  pull_request:
+    branches: [main, Dev]
+
+env:
+  GO_VERSION: "1.23"
+  FLUTTER_VERSION: "3.32.1"  
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/sleep-tracker
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run Super-Linter for go and flutter
+        id: lint
+        uses: super-linter/super-linter@v7.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_GO: true
+          VALIDATE_DART: true
+        continue-on-error: true
+
+  quality:
+    name: Testing
+    runs-on: ubuntu-latest
+    needs: lint  # Добавлена зависимость от lint
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sleep_tracker_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Install dependencies
+        working-directory: ./backend
+        run: go mod download
+
+      - name: Verify dependencies
+        working-directory: ./backend
+        run: go mod verify
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq  # Добавлена установка jq
+
+      - name: Run tests with JSON output
+        working-directory: ./backend
+        env:
+          DB_HOST: localhost
+          POSTGRES_PASSWORD: postgres
+          DB_NAME: sleep_tracker_test
+          JWT_KEY: test_jwt_key_123456789
+        run: |
+          go test -json -race ./... > test_output.json 2>&1  # Удален текстовый вывод
+      - name: Check test results
+        working-directory: ./backend
+        run: |
+          FAILED_TESTS=$(jq -s '[.[] | select(.Action == "fail" and .Test != null)] | length' test_output.json)
+          PASSED_TESTS=$(jq -s '[.[] | select(.Action == "pass" and .Test != null)] | length' test_output.json)
+          echo "Passed tests: $PASSED_TESTS"
+          echo "Failed tests: $FAILED_TESTS"
+          if [ "$FAILED_TESTS" -gt 0 ]; then
+            echo "Есть проваленные тесты!"
+            exit 1
+          fi
+          if [ "$PASSED_TESTS" -lt 10 ]; then
+            echo "Количество прошедших тестов меньше 10!"
+            exit 1
+          fi
+      - name: Upload test output
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-output
+          path: backend/test_output.json
+
+  build:
+    name: Build Applications
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}  # Исправлен путь
+
+      - name: Cache Flutter packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            frontend/.dart_tool
+          key: ${{ runner.os }}-flutter-${{ hashFiles('frontend/pubspec.lock') }}
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: go mod download
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: flutter pub get
+
+      - name: Build backend
+        working-directory: backend
+        run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/server cmd/server/main.go
+  
+
+      - name: Build frontend (web)
+        working-directory: frontend
+        run: flutter build web --release
+
+      - name: Upload backend artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-binaries
+          path: backend/bin/
+
+      - name: Upload frontend artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-web
+          path: frontend/build/web/

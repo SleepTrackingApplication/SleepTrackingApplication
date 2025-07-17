@@ -1,0 +1,409 @@
+definitions:
+  handlers.BalanceResponse:
+    properties:
+      balance:
+        example: 90
+        type: integer
+    type: object
+  handlers.CreateSleepPeriodRequest:
+    properties:
+      duration:
+        example: 28800
+        type: integer
+      end_period:
+        example: "2023-12-02T06:00:00Z"
+        type: string
+      start_period:
+        example: "2023-12-01T22:00:00Z"
+        type: string
+    type: object
+  handlers.DecreaseBalanceRequest:
+    properties:
+      amount:
+        example: 10
+        type: integer
+    type: object
+  handlers.LoginRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  handlers.PositionResponse:
+    properties:
+      position:
+        example: 5
+        type: integer
+    type: object
+  handlers.RegisterRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  handlers.TokenResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  handlers.UserResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+      username:
+        example: john_doe
+        type: string
+    type: object
+  models.SleepPeriod:
+    description: Sleep period tracking information
+    properties:
+      created_at:
+        type: string
+      duration:
+        example: 28800
+        type: integer
+      end_period:
+        example: "2023-12-02T06:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      start_period:
+        example: "2023-12-01T22:00:00Z"
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  models.User:
+    description: User account information
+    properties:
+      balance:
+        example: 50
+        type: integer
+      created_at:
+        type: string
+      id:
+        example: 1
+        type: integer
+      rating:
+        example: 100
+        type: integer
+      updated_at:
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /:
+    get:
+      description: Check if server is running and database is connected
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Server started and Database connected.
+          schema:
+            type: string
+      summary: Health check
+      tags:
+      - health
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: User credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: User login
+      tags:
+      - auth
+  /api/auth/logout:
+    post:
+      description: Remove the JWT token from the client side
+      responses:
+        "200":
+          description: Logged out successfully
+          schema:
+            type: string
+      summary: Logout user
+      tags:
+      - auth
+  /api/auth/me:
+    get:
+      description: Retrieve data of the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get current user data
+      tags:
+      - auth
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "409":
+          description: Username already exists
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register a new user
+      tags:
+      - auth
+  /api/balance/decrease:
+    post:
+      consumes:
+      - application/json
+      description: Decrease the balance of the authenticated user by a specified amount
+      parameters:
+      - description: Amount to decrease
+        in: body
+        name: amount
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.DecreaseBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.BalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Decrease user balance
+      tags:
+      - balance
+  /api/leaderboard:
+    get:
+      description: Retrieve the top users by rating
+      parameters:
+      - description: Limit the number of results (default 10, max 100)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get leaderboard
+      tags:
+      - leaderboard
+  /api/myposition:
+    get:
+      description: Retrieve the position of the authenticated user in the leaderboard
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PositionResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get my position in leaderboard
+      tags:
+      - leaderboard
+  /api/sleep/period:
+    post:
+      consumes:
+      - application/json
+      description: Add a new sleep period for the authenticated user and increse user's
+        balance and rating
+      parameters:
+      - description: Sleep period data
+        in: body
+        name: sleep
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateSleepPeriodRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.SleepPeriod'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new sleep period
+      tags:
+      - sleep
+  /api/sleep/periods:
+    get:
+      description: Retrieve all sleep periods for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SleepPeriod'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get user's sleep periods
+      tags:
+      - sleep
+  /api/sleep/periods/{user_id}:
+    get:
+      description: Retrieve sleep periods for a specific user (must be the authenticated
+        user)
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SleepPeriod'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get sleep periods by user ID
+      tags:
+      - sleep
+swagger: "2.0"
